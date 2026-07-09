@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "PulseCrypto",
+    "slug": "pulsecrypto",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.pulsecrypto.app",
+      "usesCleartextTraffic": true
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.pulsecrypto.app"
+    }
+  }
+}
