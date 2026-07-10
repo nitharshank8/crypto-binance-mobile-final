@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { useMarket }    from '../context/MarketContext';
@@ -31,26 +32,31 @@ export function TelemetryScreen() {
 
         {/* ── Header ─────────────────────────────────────────────────── */}
         <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.menuBtn}
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={styles.menuIcon}>☰</Text>
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerSub}>BTC/USDT</Text>
-            <Text style={styles.headerTitle}>System Settings{'\n'}&amp; Telemetry</Text>
-            <Text style={styles.headerDesc}>
-              Real-time performance monitoring and data ingestion controls.
-            </Text>
+          <View style={styles.headerTopRow}>
+            <View style={styles.headerLeft}>
+              <TouchableOpacity
+                style={styles.menuBtn}
+                onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.menuIcon}>☰</Text>
+              </TouchableOpacity>
+              <Text style={styles.headerSub}>BTC/USDT</Text>
+            </View>
+            <View style={[styles.liveBadge, { borderColor: isLive ? Colors.positive : Colors.negative }]}>
+              <View style={[styles.liveDot, { backgroundColor: isLive ? Colors.positive : Colors.negative }]} />
+              <Text style={[styles.liveText, { color: isLive ? Colors.positive : Colors.negative }]}>
+                {isLive ? 'LIVE' : 'OFFLINE'}
+              </Text>
+            </View>
           </View>
-          <View style={[styles.liveBadge, { borderColor: isLive ? Colors.positive : Colors.negative }]}>
-            <View style={[styles.liveDot, { backgroundColor: isLive ? Colors.positive : Colors.negative }]} />
-            <Text style={[styles.liveText, { color: isLive ? Colors.positive : Colors.negative }]}>
-              {isLive ? 'LIVE' : 'OFFLINE'}
-            </Text>
-          </View>
+
+          <View style={styles.headerDivider} />
+
+          <Text style={styles.headerTitle} numberOfLines={1}>System Settings &amp; Telemetry</Text>
+          <Text style={styles.headerDesc}>
+            Real-time performance monitoring and data ingestion controls.
+          </Text>
         </View>
 
         {/* ── Network control ────────────────────────────────────────── */}
@@ -62,20 +68,8 @@ export function TelemetryScreen() {
               <Text style={styles.cardValue}>{intervalMs}ms</Text>
             </View>
 
-            {/* Interval buttons */}
-            <View style={styles.intervalRow}>
-              {INTERVALS.map(opt => (
-                <TouchableOpacity
-                  key={opt}
-                  style={[styles.iBtn, intervalMs === opt && styles.iBtnActive]}
-                  onPress={() => handleInterval(opt)}
-                >
-                  <Text style={[styles.iBtnText, intervalMs === opt && styles.iBtnTextActive]}>
-                    {opt < 1000 ? `${opt}ms` : '1s'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {/* Interval slider */}
+            <IntervalSlider value={intervalMs} onChange={handleInterval} />
             <View style={styles.rangeRow}>
               <Text style={styles.rangeTxt}>10ms</Text>
               <Text style={styles.rangeTxt}>500ms</Text>
@@ -193,6 +187,60 @@ function InfoCard({
   );
 }
 
+const THUMB_SIZE = 22;
+
+function IntervalSlider({
+  value, onChange,
+}: { value: number; onChange: (v: number) => void }) {
+  const [trackWidth, setTrackWidth] = useState(0);
+
+  const activeIndex = Math.max(0, INTERVALS.indexOf(value));
+  const pct = INTERVALS.length > 1 ? activeIndex / (INTERVALS.length - 1) : 0;
+
+  const updateFromX = (x: number) => {
+    if (!trackWidth) return;
+    const ratio = Math.max(0, Math.min(1, x / trackWidth));
+    const idx = Math.round(ratio * (INTERVALS.length - 1));
+    const next = INTERVALS[idx];
+    if (next !== value) onChange(next);
+  };
+
+  const pan = Gesture.Pan()
+    .runOnJS(true)
+    .onBegin(e => updateFromX(e.x))
+    .onUpdate(e => updateFromX(e.x));
+
+  return (
+    <GestureDetector gesture={pan}>
+      <View
+        style={sl.hit}
+        onLayout={e => setTrackWidth(e.nativeEvent.layout.width)}
+      >
+        <View style={sl.track}>
+          <View style={[sl.fill, { width: trackWidth * pct }]} />
+        </View>
+        <View pointerEvents="none" style={[sl.thumb, { left: trackWidth * pct - THUMB_SIZE / 2 }]} />
+      </View>
+    </GestureDetector>
+  );
+}
+
+const sl = StyleSheet.create({
+  hit:   { height: 32, justifyContent: 'center' },
+  track: { height: 6, borderRadius: 3, backgroundColor: Colors.bg3, overflow: 'hidden' },
+  fill:  { height: 6, backgroundColor: Colors.accent, borderRadius: 3 },
+  thumb: {
+    position:     'absolute',
+    top:          (32 - THUMB_SIZE) / 2,
+    width:        THUMB_SIZE,
+    height:       THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    backgroundColor: Colors.accent,
+    borderWidth:  2,
+    borderColor:  Colors.bg1,
+  },
+});
+
 const ic = StyleSheet.create({
   card: {
     flexDirection:    'row',
@@ -218,19 +266,26 @@ const ic = StyleSheet.create({
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.bg1 },
   header: {
-    flexDirection:    'row',
-    justifyContent:   'space-between',
-    alignItems:       'flex-start',
-    padding:          Spacing.xl,
-    backgroundColor:  Colors.bg2,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    paddingVertical:   Spacing.xl,
+    paddingHorizontal: Spacing.md,
   },
-  menuBtn:     { padding: 2, marginRight: Spacing.sm, marginTop: 2 },
+  headerTopRow: {
+    flexDirection:     'row',
+    justifyContent:    'space-between',
+    alignItems:        'center',
+    paddingHorizontal: Spacing.sm,
+  },
+  headerLeft:  { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  headerDivider: {
+    height:            1,
+    backgroundColor:   Colors.border,
+    marginVertical:    Spacing.md,
+  },
+  menuBtn:     { padding: 2 },
   menuIcon:    { fontSize: 20, color: Colors.textPrimary },
-  headerSub:   { fontSize: FontSize.sm, color: Colors.textMuted, marginBottom: 2 },
+  headerSub:   { fontSize: FontSize.lg, color: '#FFFFFF', fontWeight: '700' },
   headerTitle: { fontSize: FontSize.xl, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
-  headerDesc:  { fontSize: FontSize.sm, color: Colors.textSecondary, lineHeight: 18 },
+  headerDesc:  { fontSize: FontSize.base, color: Colors.textPrimary, lineHeight: 20 },
   liveBadge: {
     flexDirection:    'row',
     alignItems:       'center',
@@ -240,8 +295,6 @@ const styles = StyleSheet.create({
     borderRadius:     Radius.sm,
     borderWidth:      1,
     backgroundColor:  Colors.bg1,
-    marginLeft:       Spacing.md,
-    alignSelf:        'flex-start',
   },
   liveDot:  { width: 6, height: 6, borderRadius: 3 },
   liveText: { fontSize: FontSize.xs, fontWeight: '700', letterSpacing: 0.4 },
@@ -261,15 +314,6 @@ const styles = StyleSheet.create({
   cardRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardTitle: { fontSize: FontSize.md, fontWeight: '700', color: Colors.textPrimary, flex: 1 },
   cardValue: { fontSize: FontSize.md, fontWeight: '700', color: Colors.accent },
-  intervalRow: { flexDirection: 'row', gap: Spacing.xs, flexWrap: 'wrap' },
-  iBtn: {
-    flex: 1, paddingVertical: Spacing.sm,
-    borderRadius: Radius.sm, backgroundColor: Colors.bg3,
-    alignItems: 'center', borderWidth: 1, borderColor: Colors.border, minWidth: 44,
-  },
-  iBtnActive:     { backgroundColor: Colors.accentDim, borderColor: Colors.accent },
-  iBtnText:       { fontSize: FontSize.xs, color: Colors.textMuted, fontWeight: '500' },
-  iBtnTextActive: { color: Colors.accent, fontWeight: '700' },
   rangeRow:   { flexDirection: 'row', justifyContent: 'space-between', marginTop: -4 },
   rangeTxt:   { fontSize: FontSize.xs, color: Colors.textMuted },
   divider:    { height: 1, backgroundColor: Colors.borderSubtle },
