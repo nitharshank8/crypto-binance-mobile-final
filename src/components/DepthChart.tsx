@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Path, Line } from 'react-native-svg';
 import type { PriceLevel } from '../types';
-import { Colors, FontSize, Spacing } from '../theme';
-import { formatPrice } from '../utils/format';
+import { Colors } from '../theme';
 
 interface Props {
   bids:   PriceLevel[]; // sorted desc by price, best bid first
@@ -67,47 +65,18 @@ export function DepthChart({ bids, asks, height = 120 }: Props) {
   const bidPath = curveAreaPath(bidPoints, 'left');
   const askPath = curveAreaPath(askPoints, 'right');
 
-  const bestBid = bids[0]?.[0];
-  const bestAsk = asks[0]?.[0];
-  const lowBid  = bids[bids.length - 1]?.[0];
-  const highAsk = asks[asks.length - 1]?.[0];
-
   return (
-    <View style={styles.wrap}>
-      <Svg width="100%" height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none">
-        <Line
-          x1={centerX} x2={centerX} y1={0} y2={VB_H}
-          stroke={Colors.border} strokeWidth={1} strokeDasharray="3,3"
-        />
-        {bidPath && (
-          <Path d={bidPath} fill={Colors.positive + '33'} stroke={Colors.bg2} strokeWidth={1.5} />
-        )}
-        {askPath && (
-          <Path d={askPath} fill={Colors.negative + '33'} stroke={Colors.bg2} strokeWidth={1.5} />
-        )}
-      </Svg>
-      <View style={styles.labelRow}>
-        <Text style={[styles.label, { color: Colors.positive }]}>
-          {lowBid ? `$${formatPrice(parseFloat(lowBid))}` : '—'}
-        </Text>
-        <Text style={styles.labelMid}>
-          {bestBid && bestAsk ? `$${formatPrice(parseFloat(bestBid))} · $${formatPrice(parseFloat(bestAsk))}` : '—'}
-        </Text>
-        <Text style={[styles.label, { color: Colors.negative }]}>
-          {highAsk ? `$${formatPrice(parseFloat(highAsk))}` : '—'}
-        </Text>
-      </View>
-    </View>
+    <Svg width="100%" height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} preserveAspectRatio="none">
+      <Line
+        x1={centerX} x2={centerX} y1={0} y2={VB_H}
+        stroke={Colors.border} strokeWidth={1} strokeDasharray="3,3"
+      />
+      {bidPath && (
+        <Path d={bidPath} fill={Colors.positive + '33'} stroke={Colors.bg2} strokeWidth={1.5} />
+      )}
+      {askPath && (
+        <Path d={askPath} fill={Colors.negative + '33'} stroke={Colors.bg2} strokeWidth={1.5} />
+      )}
+    </Svg>
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: { gap: Spacing.xs },
-  labelRow: {
-    flexDirection:  'row',
-    justifyContent: 'space-between',
-    alignItems:     'center',
-  },
-  label:    { fontSize: FontSize.xs, fontWeight: '700' },
-  labelMid: { fontSize: FontSize.xs, color: Colors.textMuted, fontWeight: '600' },
-});

@@ -58,10 +58,10 @@ function Row({
           maximumFractionDigits: 2,
         })}
       </Text>
-      <Text style={[styles.cell, styles.right, { color: Colors.textSecondary }]}>
+      <Text style={[styles.cell, styles.right, { color: '#FFFFFF' }]}>
         {parseFloat(qty).toFixed(5)}
       </Text>
-      <Text style={[styles.cell, styles.right, { color: Colors.textSecondary }]}>
+      <Text style={[styles.cell, styles.right, { color: '#CCCCCC' }]}>
         {parseFloat(total).toLocaleString()}
       </Text>
     </View>
