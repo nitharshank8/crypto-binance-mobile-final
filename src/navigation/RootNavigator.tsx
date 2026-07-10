@@ -84,6 +84,14 @@ function BottomTabs() {
         }}
       />
       <Tab.Screen
+        name="MarketsTab"
+        component={MarketStackNav}
+        options={{
+          tabBarIcon: ({ focused }) =>
+            <TabIcon icon={focused ? 'list' : 'list-outline'} label="Markets" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
         name="TelemetryTab"
         component={TelemetryScreen}
         options={{
