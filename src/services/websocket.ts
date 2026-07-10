@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import type {
   MarketUpdate,
   WsMessage,
@@ -13,7 +14,7 @@ import type {
  *  iOS Simulator     →  localhost
  *  Physical device   →  your LAN IP, e.g. 192.168.1.100
  */
-const HOST = 'localhost';
+const HOST = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
 const PORT = 4000;
 
 export const WS_URL   = `ws://${HOST}:${PORT}/ws`;

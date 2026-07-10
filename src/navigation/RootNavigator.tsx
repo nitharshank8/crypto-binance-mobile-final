@@ -4,6 +4,7 @@ import { NavigationContainer }          from '@react-navigation/native';
 import { createDrawerNavigator }        from '@react-navigation/drawer';
 import { createBottomTabNavigator }     from '@react-navigation/bottom-tabs';
 import { createStackNavigator }         from '@react-navigation/stack';
+import { Ionicons }                     from '@expo/vector-icons';
 
 import { MarketsScreen }       from '../screens/MarketsScreen';
 import { MarketDetailScreen }  from '../screens/MarketDetailScreen';
@@ -14,20 +15,31 @@ import { Colors, FontSize }    from '../theme';
 
 // ── Tab icon ──────────────────────────────────────────────────────────────────
 
-function TabIcon({ label, icon, focused }: { label: string; icon: string; focused: boolean }) {
+function TabIcon({
+  label,
+  icon,
+  focused,
+}: {
+  label: string;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
+  focused: boolean;
+}) {
   return (
     <View style={ti.wrap}>
-      <Text style={[ti.emoji, { opacity: focused ? 1 : 0.45 }]}>{icon}</Text>
-      <Text style={[ti.label, { color: focused ? Colors.tabActive : Colors.tabInactive }]}>
+      <Ionicons
+        name={icon}
+        size={20}
+        color={focused ? Colors.tabActive : '#FFFFFF'}
+      />
+      <Text style={[ti.label, { color: focused ? Colors.tabActive : '#FFFFFF' }]}>
         {label}
       </Text>
     </View>
   );
 }
 const ti = StyleSheet.create({
-  wrap:  { alignItems: 'center', gap: 2 },
-  emoji: { fontSize: 20 },
-  label: { fontSize: 9, fontWeight: '600', letterSpacing: 0.3 },
+  wrap:  { alignItems: 'center', gap: 2, width: 76 },
+  label: { fontSize: 9, fontWeight: '600', letterSpacing: 0.3, flexShrink: 0 },
 });
 
 // ── Market stack (list → detail) ──────────────────────────────────────────────
@@ -68,7 +80,7 @@ function BottomTabs() {
         component={MarketStackNav}
         options={{
           tabBarIcon: ({ focused }) =>
-            <TabIcon icon="📈" label="Terminal" focused={focused} />,
+            <TabIcon icon={focused ? 'trending-up' : 'trending-up-outline'} label="Terminal" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -76,7 +88,7 @@ function BottomTabs() {
         component={TelemetryScreen}
         options={{
           tabBarIcon: ({ focused }) =>
-            <TabIcon icon="⬡" label="Telemetry" focused={focused} />,
+            <TabIcon icon={focused ? 'pulse' : 'pulse-outline'} label="Telemetry" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -84,7 +96,7 @@ function BottomTabs() {
         component={AccountScreen}
         options={{
           tabBarIcon: ({ focused }) =>
-            <TabIcon icon="⚙" label="Settings" focused={focused} />,
+            <TabIcon icon={focused ? 'settings' : 'settings-outline'} label="Settings" focused={focused} />,
         }}
       />
     </Tab.Navigator>
