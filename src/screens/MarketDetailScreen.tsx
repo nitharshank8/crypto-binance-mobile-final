@@ -5,7 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePair, useMarket } from '../context/MarketContext';
 import { OrderBook }        from '../components/OrderBook';
-import { PressureBar }      from '../components/PressureBar';
+import { DepthChart }       from '../components/DepthChart';
 import { AnimatedPrice }    from '../components/AnimatedPrice';
 import { ConnectionBadge }  from '../components/ConnectionBadge';
 import { Colors, FontSize, Spacing, Radius } from '../theme';
@@ -81,14 +81,27 @@ export function MarketDetailScreen({ route, navigation }: Props) {
           </View>
         </View>
 
+        {/* ── Order book — bids ────────────────────────────────────── */}
+        {update && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>ORDER BOOK — BIDS</Text>
+            <OrderBook levels={update.bids} side="bids" />
+          </View>
+        )}
+
+        {/* ── Order book — asks ────────────────────────────────────── */}
+        {update && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>ORDER BOOK — ASKS</Text>
+            <OrderBook levels={update.asks} side="asks" />
+          </View>
+        )}
+
         {/* ── Market depth ─────────────────────────────────────────── */}
         {update && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>MARKET DEPTH</Text>
-            <PressureBar
-              buyPressure={update.buyPressure}
-              sellPressure={update.sellPressure}
-            />
+            <DepthChart bids={update.bids} asks={update.asks} />
             <View style={styles.depthRow}>
               <View style={styles.depthItem}>
                 <View style={[styles.depthDot, { backgroundColor: Colors.positive }]} />
@@ -109,22 +122,6 @@ export function MarketDetailScreen({ route, navigation }: Props) {
                 </Text>
               </View>
             </View>
-          </View>
-        )}
-
-        {/* ── Order book — bids ────────────────────────────────────── */}
-        {update && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>ORDER BOOK — BIDS</Text>
-            <OrderBook levels={update.bids} side="bids" />
-          </View>
-        )}
-
-        {/* ── Order book — asks ────────────────────────────────────── */}
-        {update && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>ORDER BOOK — ASKS</Text>
-            <OrderBook levels={update.asks} side="asks" />
           </View>
         )}
 
