@@ -55,6 +55,22 @@ function MarketStackNav() {
   );
 }
 
+// ── Terminal stack (opens straight into DOGE/USDT detail) ─────────────────────
+
+const TerminalStack = createStackNavigator();
+
+function TerminalStackNav() {
+  return (
+    <TerminalStack.Navigator screenOptions={{ headerShown: false }}>
+      <TerminalStack.Screen
+        name="MarketDetail"
+        component={MarketDetailScreen as any}
+        initialParams={{ pair: 'BTCUSDT' }}
+      />
+    </TerminalStack.Navigator>
+  );
+}
+
 // ── Bottom tab navigator ──────────────────────────────────────────────────────
 
 const Tab = createBottomTabNavigator();
@@ -77,7 +93,7 @@ function BottomTabs() {
     >
       <Tab.Screen
         name="Terminal"
-        component={MarketStackNav}
+        component={TerminalStackNav}
         options={{
           tabBarIcon: ({ focused }) =>
             <TabIcon icon={focused ? 'trending-up' : 'trending-up-outline'} label="Terminal" focused={focused} />,

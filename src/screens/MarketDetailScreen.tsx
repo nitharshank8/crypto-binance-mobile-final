@@ -1,18 +1,26 @@
 import React from 'react';
 import {ScrollView, StyleSheet, Text, TouchableOpacity, View,} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import {DrawerActions} from '@react-navigation/native';
 import {useMarket, usePair} from '../context/MarketContext';
 import {OrderBook} from '../components/OrderBook';
 import {DepthChart} from '../components/DepthChart';
 import {AnimatedPrice} from '../components/AnimatedPrice';
-import {ConnectionBadge} from '../components/ConnectionBadge';
 import {Colors, FontSize, Radius, Spacing} from '../theme';
 import {formatPrice, formatSpread, formatTimestamp} from '../utils/format';
+import type {ConnectionStatus} from '../types';
 
 interface Props {
     route: { params: { pair: string } };
     navigation: any;
 }
+
+const STATUS_COLOR: Record<ConnectionStatus, string> = {
+    connected:    Colors.positive,
+    connecting:   Colors.warning,
+    reconnecting: Colors.warning,
+    disconnected: Colors.negative,
+};
 
 export function MarketDetailScreen({route, navigation}: Props) {
     const {pair: pairId} = route.params;
@@ -35,14 +43,28 @@ export function MarketDetailScreen({route, navigation}: Props) {
 
             {/* ── Top bar ──────────────────────────────────────────────────── */}
             <View style={styles.topBar}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Text style={styles.backArrow}>←</Text>
-                    <Text style={styles.backText}>Back</Text>
-                </TouchableOpacity>
+                {navigation.canGoBack() ? (
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                        <Text style={styles.backArrow}>←</Text>
+                        <Text style={styles.backText}>Back</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity
+                        style={styles.menuBtn}
+                        onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                        hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}
+                    >
+                        <Text style={styles.menuIcon}>☰</Text>
+                    </TouchableOpacity>
+                )}
 
                 <View style={styles.topCenter}>
-                    <Text style={styles.pairTitle}>{pair.displayName}</Text>
-                    <ConnectionBadge status={connectionStatus} compact/>
+                    <Text style={styles.pairTitle} numberOfLines={1}>{pair.displayName}</Text>
+                    <Text style={styles.statusSep}>·</Text>
+                    <View style={[styles.statusDot, {backgroundColor: connectionStatus === 'connected' ? Colors.positive : Colors.warning}]}/>
+                    <Text style={[styles.statusText, {color: STATUS_COLOR[connectionStatus]}]}>
+                        {connectionStatus}
+                    </Text>
                 </View>
 
                 <TouchableOpacity onPress={() => toggleFav(pairId)} style={styles.favBtn}>
@@ -160,11 +182,16 @@ const styles = StyleSheet.create({
     backBtn: {flexDirection: 'row', alignItems: 'center', gap: 4, minWidth: 56},
     backArrow: {color: Colors.accent, fontSize: FontSize.lg, fontWeight: '700'},
     backText: {color: Colors.accent, fontSize: FontSize.base},
+    menuBtn: {minWidth: 56, padding: 2},
+    menuIcon: {fontSize: 20, color: Colors.textPrimary},
     topCenter: {
         flex: 1, flexDirection: 'row', alignItems: 'center',
         justifyContent: 'center', gap: Spacing.sm,
     },
     pairTitle: {fontSize: FontSize.lg, fontWeight: '700', color: Colors.textPrimary},
+    statusSep: {fontSize: FontSize.base, fontWeight: '400', color: Colors.textMuted},
+    statusDot: {width: 7, height: 7, borderRadius: Radius.full},
+    statusText: {fontSize: FontSize.base, fontWeight: '600'},
     favBtn: {minWidth: 36, alignItems: 'flex-end'},
     star: {fontSize: 22, color: Colors.textMuted},
     starActive: {color: Colors.warning},
