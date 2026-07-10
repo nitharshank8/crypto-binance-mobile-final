@@ -27,7 +27,9 @@ export function AccountScreen() {
           </View>
           <View>
             <Text style={styles.name}>Pro Trader</Text>
-            <Text style={styles.tier}>Tier 3 Verified • ID: 882941</Text>
+            <Text style={styles.tier}>
+              Tier 3 Verified • <Text style={{ color: Colors.positive }}>ID: 882941</Text>
+            </Text>
           </View>
         </View>
 

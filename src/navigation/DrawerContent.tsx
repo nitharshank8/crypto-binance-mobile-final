@@ -2,17 +2,18 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { DrawerContentScrollView, type DrawerContentComponentProps } from '@react-navigation/drawer';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useMarket } from '../context/MarketContext';
 import { Colors, FontSize, Spacing, Radius } from '../theme';
 
-const ACCOUNT_ITEMS = [
-  { icon: '🔑', label: 'API Keys',  screen: 'AccountDrawer' },
-  { icon: '🛡',  label: 'Security', screen: 'AccountDrawer' },
+const ACCOUNT_ITEMS: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; screen: string }[] = [
+  { icon: 'key-outline',              label: 'API Keys',  screen: 'AccountDrawer' },
+  { icon: 'shield-checkmark-outline',  label: 'Security', screen: 'AccountDrawer' },
 ];
 
-const TRADING_ITEMS = [
-  { icon: '↺', label: 'Trade History', screen: 'AccountDrawer', active: true },
-  { icon: '❓', label: 'Support',       screen: 'AccountDrawer', active: false },
+const TRADING_ITEMS: { icon: React.ComponentProps<typeof Ionicons>['name']; label: string; screen: string; active: boolean }[] = [
+  { icon: 'time-outline',        label: 'Trade History', screen: 'AccountDrawer', active: true },
+  { icon: 'help-circle-outline', label: 'Support',       screen: 'AccountDrawer', active: false },
 ];
 
 export function DrawerContent(props: DrawerContentComponentProps) {
@@ -29,7 +30,9 @@ export function DrawerContent(props: DrawerContentComponentProps) {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.name}>Pro Trader</Text>
-          <Text style={styles.tier}>Tier 3 Verified • ID: 882941</Text>
+          <Text style={styles.tier}>
+            Tier 3 Verified • <Text style={{ color: Colors.positive }}>ID: 882941</Text>
+          </Text>
         </View>
       </View>
 
@@ -44,7 +47,7 @@ export function DrawerContent(props: DrawerContentComponentProps) {
             style={styles.item}
             onPress={() => props.navigation.navigate('Main')}
           >
-            <Text style={styles.icon}>🏠</Text>
+            <Text style={styles.homeIcon}>🏠</Text>
             <Text style={styles.itemLabel}>Home</Text>
           </TouchableOpacity>
         </View>
@@ -58,7 +61,7 @@ export function DrawerContent(props: DrawerContentComponentProps) {
               style={styles.item}
               onPress={() => props.navigation.navigate(item.screen)}
             >
-              <Text style={styles.icon}>{item.icon}</Text>
+              <Ionicons name={item.icon} size={22} color="#FFFFFF" style={styles.icon} />
               <Text style={styles.itemLabel}>{item.label}</Text>
             </TouchableOpacity>
           ))}
@@ -73,9 +76,12 @@ export function DrawerContent(props: DrawerContentComponentProps) {
               style={[styles.item, item.active && styles.itemActive]}
               onPress={() => props.navigation.navigate(item.screen)}
             >
-              <Text style={[styles.icon, item.active && { color: Colors.accent }]}>
-                {item.icon}
-              </Text>
+              <Ionicons
+                name={item.icon}
+                size={22}
+                color="#FFFFFF"
+                style={styles.icon}
+              />
               <Text style={[styles.itemLabel, item.active && styles.itemLabelActive]}>
                 {item.label}
               </Text>
@@ -135,7 +141,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md, gap: Spacing.md,
   },
   itemActive: { backgroundColor: Colors.drawerActive },
-  icon:       { fontSize: 16, width: 24, color: Colors.textSecondary, textAlign: 'center' },
+  icon:       { width: 24, textAlign: 'center' },
+  homeIcon:   { fontSize: 16, width: 24, color: Colors.textSecondary, textAlign: 'center' },
   itemLabel:  { fontSize: FontSize.base, color: Colors.drawerText, fontWeight: '500' },
   itemLabelActive: { color: Colors.accent, fontWeight: '600' },
   footer: {
